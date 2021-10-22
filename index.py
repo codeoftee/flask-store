@@ -4,10 +4,36 @@ app = Flask(__name__)
 
 name = 'Jon'
 age = 90
+products = [
+    {
+        "title": "Samsung S20",
+        "price": 20000,
+        "category": 'smart phones',
+        "description": "Album example is © Bootstrap, but please download and customize it for yourself!"
+    },
+    {
+        "title": "iPhone 22",
+        "price": 5920000,
+        "category": 'smart phones',
+        "description": "Album example is © Bootstrap, but please download and customize it for yourself!"
+    },
+    {
+        "title": "Samsung XYZ",
+        "price": 3420000,
+        "category": 'smart phones',
+        "description": "Album example is © Bootstrap, but please download and customize it for yourself!"
+    }
+]
+
+
+fruits = ['Mango', 'Banana', 'Orange', 'Apple']
 
 @app.route('/')
 def home():
-    return render_template('home.html', name=name, how_old=age)
+    new_fruit = 'Grape'
+    fruits.append(new_fruit)
+
+    return render_template('home.html', my_friuts=fruits, products=products)
 
 
 @app.route('/about')
