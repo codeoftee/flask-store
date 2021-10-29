@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add product</title>
+</head>
+<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/flask-store.css')}}">
+
+<body>
+<div class="container">
+    <div class="center-div">
+        <h4>Add Product</h4>
+        <form method="post" action="/add-product">
+        <input type="text" name="title" class="form-control" placeholder="Enter title">
+            <br/>
+            <input type="number" name="price" class="form-control" placeholder="Enter price">
+            <br/>
+            <input type="text" name="category" class="form-control" placeholder="Enter category">
+            <br/>
+            <textarea name="description" class="form-control" rows="3">Enter product description.</textarea>
+            <br/>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
