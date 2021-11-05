@@ -14,5 +14,13 @@ class User(db.Model):
         return "<User {}>".format(self.username)
 
 
-class Product():
-    pass
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    title = db.Column(db.String(50))
+    price = db.Column(db.Numeric(10, 2), default=0)
+    category = db.Column(db.String(50))
+    description = db.Column(db.TEXT)
+
+    def __repr__(self):
+        return "<Product {}".format(self.title)
+
