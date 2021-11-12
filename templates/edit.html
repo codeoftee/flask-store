@@ -21,7 +21,7 @@
 
     <div class="center-div">
         <h4>Editing {{ product.title }}</h4>
-        <form method="post" action="/edit/{{ product.id }}">
+        <form enctype="multipart/form-data" method="post" action="/edit/{{ product.id }}">
         <input value="{{ product.title }}" type="text" name="title" class="form-control" placeholder="Enter title">
             <br/>
             <input value="{{ product.price }}" type="number" name="price" class="form-control" placeholder="Enter price">
@@ -32,6 +32,8 @@
                 {{ product.description }}
             </textarea>
             <br/>
+            <input type="file" name="image" placeholder="select picture">
+            <br/> <br/>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>

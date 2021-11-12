@@ -1,10 +1,12 @@
 import hashlib
+import os
 from datetime import timedelta
 
 from flask import Flask, render_template, \
-    request, redirect, url_for, flash, session
+    request, redirect, url_for, flash, session, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import secure_filename
 
 from config import Config
 
@@ -12,8 +14,9 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-from models import User, Product
 
+from models import User, Product
+from store_functions import check_login
 
 @app.route('/')
 def home():
@@ -28,11 +31,19 @@ def about_page():
 
 @app.route('/add-new-product')
 def add_product_page():
-    return render_template('add-product.html')
+    user = check_login()
+    if user is None:
+        return redirect(url_for('login'))
+
+    return render_template('add-product.html', user=user)
 
 
 @app.route('/add-product', methods=['POST', 'GET'])
 def add_product():
+    user = check_login()
+    if user is None:
+        return redirect(url_for('login'))
+
     if request.method == 'GET':
         return redirect(url_for('add_product_page'))
     else:
@@ -52,6 +63,10 @@ def add_product():
 
 @app.route('/edit/<id>', methods=['GET', 'POST'])
 def edit_product(id):
+    user = check_login()
+    if user is None:
+        return redirect(url_for('login'))
+
     # check database for the product with that id.
     product = Product.query.filter(Product.id == id).one()
     if product is None:
@@ -71,6 +86,18 @@ def edit_product(id):
         product.price = request.form['price']
         product.category = request.form['category']
         product.description = request.form['description']
+
+        # upload image
+        image = request.files['image']
+        if image is None or image.filename is None:
+            flash('Please select product image!')
+            return render_template('edit.html')
+        print(image.filename)
+        filename = secure_filename(image.filename)
+        image.save(os.path.join(Config.UPLOADS_FOLDER, filename))
+        image = filename
+        product.image = image
+
         db.session.commit()
         flash('Product updated successfully')
         return redirect(url_for('home'))
@@ -78,6 +105,10 @@ def edit_product(id):
 
 @app.route('/delete/<id>')
 def delete_product(id):
+    user = check_login()
+    if user is None:
+        return redirect(url_for('login'))
+
     # check database for the product with that id.
     product = Product.query.filter(Product.id == id).one()
     if product is None:
@@ -124,3 +155,42 @@ def sign_up():
             resp.set_cookie('password', password_hash, max_age=timedelta(hours=24))
             print('USer id is', user.id)
             return resp
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    else:
+        email = request.form['email']
+        password = request.form['password']
+        pw = hashlib.sha256(password.encode()).hexdigest()
+        user = User.query.filter_by(email=email).first()
+        if user is not None:
+            if user.password_hash == pw:
+                # logged in successfully
+                session['username'] = user.username
+                session['email'] = user.email
+                resp = redirect(url_for('home'))
+                resp.set_cookie('id', str(user.id), max_age=timedelta(hours=24))
+                resp.set_cookie('password', pw, max_age=timedelta(hours=24))
+                return resp
+        flash('Invalid username or password!')
+        return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    # sessions
+    session['username'] = None
+    session['email'] = None
+    # remove cookies
+    resp = redirect(url_for('login'))
+    resp.set_cookie('id', expires=0)
+    resp.set_cookie('password', expires=0)
+    return resp
+
+
+@app.route('/uploads/<filename>')
+def view_file(filename):
+    return send_from_directory('static/uploads', filename)

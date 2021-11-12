@@ -20,6 +20,7 @@ class Product(db.Model):
     price = db.Column(db.Numeric(10, 2), default=0)
     category = db.Column(db.String(50))
     description = db.Column(db.TEXT)
+    image = db.Column(db.String)
 
     def __repr__(self):
         return "<Product {}".format(self.title)
